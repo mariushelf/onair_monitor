@@ -16,14 +16,15 @@ import urllib.error
 import urllib.request
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PIL import Image
 
 try:
     from importlib.resources import files as _resource_files
 except ImportError:  # Python 3.8
     from importlib_resources import files as _resource_files  # type: ignore[no-redef]
-
-import pystray
-from PIL import Image, ImageDraw
 
 logger = logging.getLogger("onair_monitor")
 
@@ -131,6 +132,9 @@ def notify_ha(ha_url: str, webhook_id: str) -> None:
 
 def _make_icon_image(active: bool) -> "Image.Image":
     """Create a 64x64 webcam icon — red if active, gray if idle."""
+    # Lazy import: PIL requires system libs not available in headless/CI environments
+    from PIL import Image, ImageDraw
+
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
@@ -355,6 +359,9 @@ def main(argv: list[str] | None = None) -> None:
     else:
         # Tray mode — icon on main thread, monitor on daemon thread
         import threading
+
+        # Lazy import: pystray requires GTK, unavailable in headless/CI environments
+        import pystray
 
         icon = pystray.Icon("onair-monitor")
         icon.icon = _make_icon_image(active=False)

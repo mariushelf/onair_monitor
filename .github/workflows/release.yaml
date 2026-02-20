@@ -37,6 +37,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - name: Semantic Release (version only)
         id: semrel
@@ -72,6 +73,14 @@ jobs:
           gh release create "${{ steps.semrel.outputs.tag }}" \
             dist/* \
             --draft \
-            --generate-notes \
+            --notes "" \
             --title "${{ steps.semrel.outputs.tag }}" \
             $PRERELEASE_FLAG
+
+      - name: Post release notes to draft
+        if: steps.semrel.outputs.released == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pipx install python-semantic-release
+          semantic-release changelog --post-to-release-tag "${{ steps.semrel.outputs.tag }}"

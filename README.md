@@ -4,33 +4,41 @@ A tiny Linux daemon that detects camera usage and notifies
 [Home Assistant](https://www.home-assistant.io/) via webhooks.
 Optionally shows a system-tray icon that turns red when a camera is active.
 
-## Prerequisites
+## Install
 
-PyGObject requires the GObject introspection and Cairo development libraries
-to be installed on your system.
+```bash
+uv tool install onair-monitor
+```
 
-**Debian / Ubuntu:**
+### Tray icon support
+
+To enable the system-tray icon, install the `tray` extra and the required
+system libraries:
+
+**1. System libraries (needed to build PyGObject):**
+
+Debian / Ubuntu:
 
 ```bash
 sudo apt install libgirepository-2.0-dev libcairo2-dev
 ```
 
-**Fedora:**
+Fedora:
 
 ```bash
 sudo dnf install gobject-introspection-devel cairo-devel
 ```
 
-**Arch Linux:**
+Arch Linux:
 
 ```bash
 sudo pacman -S gobject-introspection cairo
 ```
 
-## Install
+**2. Install with the tray extra:**
 
 ```bash
-uv tool install onair-monitor
+uv tool install onair-monitor --with tray
 ```
 
 > **GNOME users:** the tray icon requires the

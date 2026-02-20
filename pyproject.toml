@@ -25,13 +25,14 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 
-dependencies = [
+dependencies = []
+
+[project.optional-dependencies]
+tray = [
     "pystray>=0.19",
     "Pillow>=9.0",
     "pygobject>=3.54.5",
 ]
-
-[project.optional-dependencies]
 dev = [
     "pytest>=7.0",
 ]

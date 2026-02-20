@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "onair-monitor"
-version = "0.1.0"
+version = "0.1.1"
 description = "Linux daemon that detects camera usage and notifies Home Assistant via webhooks."
 readme = "README.md"
 license = "MIT"

@@ -57,8 +57,6 @@ jobs:
       - if: steps.semrel.outputs.released == 'true'
         uses: astral-sh/setup-uv@v5
       - if: steps.semrel.outputs.released == 'true'
-        run: sudo apt-get update && sudo apt-get install -y libgirepository-2.0-dev libcairo2-dev
-      - if: steps.semrel.outputs.released == 'true'
         run: uv build
 
       - name: Generate release notes

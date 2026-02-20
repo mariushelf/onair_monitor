@@ -12,11 +12,11 @@ Use `uv` for all dependency management (not `pip`). Examples:
 Use semantic commit messages:
 
 - `feat:` new feature
-- `fix:` bug fix
+- `fix:` bug fix (something was actually broken)
 - `docs:` documentation changes
 - `style:` formatting, missing semicolons, etc. (no code change)
 - `refactor:` code restructuring without changing behavior
 - `test:` adding or updating tests
-- `chore:` maintenance tasks, dependency updates, CI config
+- `chore:` maintenance tasks, dependency updates, CI config, cleanup of things that work but are unnecessary
 
 Do NOT add "Co-Authored-By" or any AI attribution trailers to commit messages.

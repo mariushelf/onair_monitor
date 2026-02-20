@@ -6,25 +6,25 @@ Optionally shows a system-tray icon that turns red when a camera is active.
 
 ## Prerequisites
 
-PyGObject requires the GObject introspection development libraries to be
-installed on your system.
+PyGObject requires the GObject introspection and Cairo development libraries
+to be installed on your system.
 
 **Debian / Ubuntu:**
 
 ```bash
-sudo apt install libgirepository-2.0-dev
+sudo apt install libgirepository-2.0-dev libcairo2-dev
 ```
 
 **Fedora:**
 
 ```bash
-sudo dnf install gobject-introspection-devel
+sudo dnf install gobject-introspection-devel cairo-devel
 ```
 
 **Arch Linux:**
 
 ```bash
-sudo pacman -S gobject-introspection
+sudo pacman -S gobject-introspection cairo
 ```
 
 ## Install

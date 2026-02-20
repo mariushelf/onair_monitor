@@ -48,7 +48,18 @@ jobs:
           prerelease_token: ${{ github.event.inputs.prerelease_token }}
           vcs_release: false
 
-      - name: Create draft GitHub Release
+      - name: Build package
+        if: steps.semrel.outputs.released == 'true'
+        uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - if: steps.semrel.outputs.released == 'true'
+        uses: astral-sh/setup-uv@v5
+      - if: steps.semrel.outputs.released == 'true'
+        run: sudo apt-get update && sudo apt-get install -y libgirepository-2.0-dev libcairo2-dev
+      - if: steps.semrel.outputs.released == 'true'
+        run: uv build
+
+      - name: Create draft GitHub Release with artifacts
         if: steps.semrel.outputs.released == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -58,6 +69,7 @@ jobs:
             PRERELEASE_FLAG="--prerelease"
           fi
           gh release create "${{ steps.semrel.outputs.tag }}" \
+            dist/* \
             --draft \
             --generate-notes \
             --title "${{ steps.semrel.outputs.tag }}" \

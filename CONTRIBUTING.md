@@ -49,7 +49,9 @@ This will:
 - Run the full CI suite (lint + tests).
 - Determine the next version from commit history (or use the forced level).
 - Bump the version in `pyproject.toml`, commit, tag, and push.
-- Create a **draft** GitHub Release with auto-generated release notes.
+- Build the package and verify it succeeds.
+- Create a **draft** GitHub Release with auto-generated release notes and the
+  built artifacts (`.tar.gz` and `.whl`) attached.
 
 ### Step 2 — Publish the release
 
@@ -57,8 +59,8 @@ This will:
 2. Edit the release notes as needed.
 3. Click **Publish release**.
 
-This triggers the publish workflow, which builds the package and uploads it
-to PyPI.
+This triggers the publish workflow, which downloads the artifacts attached
+to the release and uploads them to PyPI.
 
 ### Override Examples
 

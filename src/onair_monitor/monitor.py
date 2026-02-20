@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from PIL import Image
+    from PIL import Image  # ty: ignore[unresolved-import]
 
 try:
     from importlib.resources import files as _resource_files
@@ -133,7 +133,7 @@ def notify_ha(ha_url: str, webhook_id: str) -> None:
 def _make_icon_image(active: bool) -> "Image.Image":
     """Create a 64x64 webcam icon — red if active, gray if idle."""
     # Lazy import: PIL requires system libs not available in headless/CI environments
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageDraw  # ty: ignore[unresolved-import]
 
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -361,7 +361,7 @@ def main(argv: list[str] | None = None) -> None:
         import threading
 
         # Lazy import: pystray requires GTK, unavailable in headless/CI environments
-        import pystray
+        import pystray  # ty: ignore[unresolved-import]
 
         icon = pystray.Icon("onair-monitor")
         icon.icon = _make_icon_image(active=False)

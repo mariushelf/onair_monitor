@@ -96,6 +96,7 @@ include = ["tests/**"]
 [tool.ty.overrides.rules]
 invalid-method-override = "ignore"
 
+
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
 commit_parser = "conventional"

@@ -1,9 +1,9 @@
 SHELL := /bin/bash
 
-.PHONY: install clean test test-unit-tests test-doctest build ty ruff type_check lint pre_commit format
+.PHONY: sync clean test test-unit-tests test-doctest build ty ruff type_check lint pre_commit format
 
-install:
-	uv sync
+sync:
+	uv sync --all-extras
 
 clean:
 	rm -rf dist

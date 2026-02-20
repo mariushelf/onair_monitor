@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=On-Air Monitor
+Exec=onair-monitor
+Icon=camera-video
+Comment=Camera usage monitor for Home Assistant
+X-GNOME-Autostart-enabled=true
+Terminal=false

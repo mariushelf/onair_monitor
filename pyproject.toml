@@ -95,6 +95,20 @@ include = ["tests/**"]
 [tool.ty.overrides.rules]
 invalid-method-override = "ignore"
 
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+commit_parser = "conventional"
+allow_zero_version = true
+
+[tool.semantic_release.branches.master]
+match = "(master|main)"
+
+[tool.semantic_release.branches.release]
+match = "release/.*"
+
+[tool.semantic_release.remote]
+type = "github"
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.2",

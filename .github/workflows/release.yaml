@@ -61,6 +61,13 @@ jobs:
       - if: steps.semrel.outputs.released == 'true'
         run: uv build
 
+      - name: Generate release notes
+        if: steps.semrel.outputs.released == 'true'
+        run: |
+          pipx install python-semantic-release
+          semantic-release changelog
+          awk '/^## v/{if(found) exit; found=1} found' CHANGELOG.md > release_notes.md
+
       - name: Create draft GitHub Release with artifacts
         if: steps.semrel.outputs.released == 'true'
         env:
@@ -73,14 +80,6 @@ jobs:
           gh release create "${{ steps.semrel.outputs.tag }}" \
             dist/* \
             --draft \
-            --notes "" \
+            --notes-file release_notes.md \
             --title "${{ steps.semrel.outputs.tag }}" \
             $PRERELEASE_FLAG
-
-      - name: Post release notes to draft
-        if: steps.semrel.outputs.released == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pipx install python-semantic-release
-          semantic-release changelog --post-to-release-tag "${{ steps.semrel.outputs.tag }}"

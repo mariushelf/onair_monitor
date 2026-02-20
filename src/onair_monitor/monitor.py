@@ -22,13 +22,8 @@ try:
 except ImportError:  # Python 3.8
     from importlib_resources import files as _resource_files  # type: ignore[no-redef]
 
-try:
-    import pystray  # type: ignore[import-untyped]
-    from PIL import Image, ImageDraw  # type: ignore[import-untyped]
-
-    HAS_TRAY = True
-except ImportError:
-    HAS_TRAY = False
+import pystray
+from PIL import Image, ImageDraw
 
 logger = logging.getLogger("onair_monitor")
 
@@ -321,7 +316,7 @@ def main(argv: list[str] | None = None) -> None:
         )
         sys.exit(1)
 
-    headless = args.headless or not HAS_TRAY
+    headless = args.headless
 
     if headless:
         logger.info("Starting in headless mode (tool=%s)", tool)

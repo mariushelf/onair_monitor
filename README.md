@@ -38,7 +38,7 @@ sudo pacman -S gobject-introspection cairo
 **2. Install with the tray extra:**
 
 ```bash
-uv tool install onair-monitor --with tray
+uv tool install "onair-monitor[tray]"
 ```
 
 > **GNOME users:** the tray icon requires the

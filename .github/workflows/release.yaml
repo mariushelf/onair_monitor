@@ -46,6 +46,7 @@ jobs:
           force: ${{ github.event.inputs.force }}
           prerelease: ${{ github.event.inputs.prerelease }}
           prerelease_token: ${{ github.event.inputs.prerelease_token }}
+          changelog: false
           vcs_release: false
 
       - name: Build package

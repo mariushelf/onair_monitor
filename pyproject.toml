@@ -28,6 +28,7 @@ classifiers = [
 dependencies = [
     "pystray>=0.19",
     "Pillow>=9.0",
+    "pygobject>=3.54.5",
 ]
 
 [project.optional-dependencies]

@@ -130,11 +130,39 @@ def notify_ha(ha_url: str, webhook_id: str) -> None:
 
 
 def _make_icon_image(active: bool) -> "Image.Image":
-    """Create a 64x64 circle icon — red if active, gray if idle."""
+    """Create a 64x64 webcam icon — red if active, gray if idle."""
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    color = (220, 40, 40, 255) if active else (140, 140, 140, 255)
-    draw.ellipse([4, 4, 60, 60], fill=color)
+
+    outline = (40, 40, 40, 255)
+
+    if active:
+        body_fill = (220, 40, 40, 255)
+        lens_ring = (255, 255, 255, 255)
+        lens_center = (60, 10, 10, 255)
+    else:
+        body_fill = (180, 180, 180, 255)
+        lens_ring = (255, 255, 255, 255)
+        lens_center = (80, 80, 80, 255)
+
+    # Camera body — dark outline, then colored fill
+    draw.rounded_rectangle([2, 14, 48, 54], radius=8, fill=outline)
+    draw.rounded_rectangle([5, 17, 45, 51], radius=6, fill=body_fill)
+
+    # Viewfinder wedge — outline then fill
+    draw.polygon([(44, 22), (62, 14), (62, 54), (44, 46)], fill=outline)
+    draw.polygon([(46, 25), (59, 18), (59, 50), (46, 43)], fill=body_fill)
+
+    # Lens — white ring with dark center (high contrast at any size)
+    draw.ellipse([11, 21, 39, 49], fill=outline)
+    draw.ellipse([14, 24, 36, 46], fill=lens_ring)
+    draw.ellipse([19, 29, 31, 41], fill=lens_center)
+
+    # Recording indicator dot (top-right, only when active)
+    if active:
+        draw.ellipse([44, 2, 60, 18], fill=(255, 50, 50, 255))
+        draw.ellipse([47, 5, 57, 15], fill=(255, 180, 180, 255))
+
     return img
 
 
@@ -330,15 +358,19 @@ def main(argv: list[str] | None = None) -> None:
 
         icon = pystray.Icon("onair-monitor")
         icon.icon = _make_icon_image(active=False)
-        icon.title = "On-Air Monitor"
+        icon.title = "On-Air Monitor \u2014 Idle"
         icon.menu = pystray.Menu(
             pystray.MenuItem("On-Air Monitor", None, enabled=False),
-            pystray.MenuItem("Quit", lambda: icon.stop()),
+            pystray.MenuItem("Stop Monitor", lambda: icon.stop()),
         )
 
         def _on_state_change(active: bool) -> None:
             icon.icon = _make_icon_image(active)
-            icon.title = "ON AIR" if active else "On-Air Monitor"
+            icon.title = (
+                "On-Air Monitor \u2014 ON AIR"
+                if active
+                else "On-Air Monitor \u2014 Idle"
+            )
 
         def _run_monitor() -> None:
             try:

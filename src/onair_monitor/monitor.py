@@ -14,6 +14,7 @@ import textwrap
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from pathlib import Path
 
 try:
@@ -102,8 +103,8 @@ def camera_in_use(tool: str) -> bool:
     if not devices:
         return False
     try:
-        result = subprocess.run(
-            [tool] + devices,
+        result = subprocess.run(  # noqa: S603
+            [tool, *devices],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -120,9 +121,9 @@ def camera_in_use(tool: str) -> bool:
 def notify_ha(ha_url: str, webhook_id: str) -> None:
     """POST to a Home Assistant webhook endpoint."""
     url = f"{ha_url.rstrip('/')}/api/webhook/{webhook_id}"
-    req = urllib.request.Request(url, method="POST", data=b"")
+    req = urllib.request.Request(url, method="POST", data=b"")  # noqa: S310
     try:
-        with urllib.request.urlopen(req, timeout=5):
+        with urllib.request.urlopen(req, timeout=5):  # noqa: S310
             logger.info("Notified HA: %s", webhook_id)
     except (urllib.error.URLError, OSError) as exc:
         logger.error("Failed to notify HA (%s): %s", webhook_id, exc)
@@ -164,9 +165,10 @@ def install_service() -> None:
     """Write and enable a systemd user service."""
     SYSTEMD_DIR.mkdir(parents=True, exist_ok=True)
     SYSTEMD_FILE.write_text(SYSTEMD_UNIT)
-    subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
+    subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)  # noqa: S607
     subprocess.run(
-        ["systemctl", "--user", "enable", "onair-monitor.service"], check=False
+        ["systemctl", "--user", "enable", "onair-monitor.service"],  # noqa: S607
+        check=False,
     )
     print(f"Installed systemd user service: {SYSTEMD_FILE}")
     print("Start it with: systemctl --user start onair-monitor.service")
@@ -180,7 +182,7 @@ def uninstall() -> None:
         removed.append(str(AUTOSTART_FILE))
 
     subprocess.run(
-        ["systemctl", "--user", "disable", "--now", "onair-monitor.service"],
+        ["systemctl", "--user", "disable", "--now", "onair-monitor.service"],  # noqa: S607
         check=False,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -190,7 +192,7 @@ def uninstall() -> None:
         removed.append(str(SYSTEMD_FILE))
 
     subprocess.run(
-        ["systemctl", "--user", "daemon-reload"],
+        ["systemctl", "--user", "daemon-reload"],  # noqa: S607
         check=False,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -214,7 +216,7 @@ def monitor_loop(
     config: dict,
     tool: str,
     *,
-    on_state_change: object | None = None,
+    on_state_change: Callable[[bool], None] | None = None,
 ) -> None:
     """Poll cameras and notify HA on state transitions.
 

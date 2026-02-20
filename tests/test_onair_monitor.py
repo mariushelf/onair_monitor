@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 from unittest import mock
 
 import pytest
 
 from onair_monitor import monitor
-
 
 # ---------------------------------------------------------------------------
 # Config
@@ -30,7 +28,12 @@ class TestLoadConfig:
 
     def test_loads_existing_config(self, tmp_path):
         cfg = tmp_path / "config.json"
-        expected = {"ha_url": "http://ha:8123", "webhook_on": "on", "webhook_off": "off", "poll_interval": 1}
+        expected = {
+            "ha_url": "http://ha:8123",
+            "webhook_on": "on",
+            "webhook_off": "off",
+            "poll_interval": 1,
+        }
         cfg.write_text(json.dumps(expected))
         result = monitor.load_config(cfg)
         assert result == expected
@@ -119,11 +122,17 @@ class TestNotifyHA:
 
 class TestFindTool:
     def test_fuser_found(self):
-        with mock.patch("onair_monitor.monitor.shutil.which", side_effect=lambda t: "/usr/bin/fuser" if t == "fuser" else None):
+        with mock.patch(
+            "onair_monitor.monitor.shutil.which",
+            side_effect=lambda t: "/usr/bin/fuser" if t == "fuser" else None,
+        ):
             assert monitor._find_tool() == "fuser"
 
     def test_lsof_fallback(self):
-        with mock.patch("onair_monitor.monitor.shutil.which", side_effect=lambda t: "/usr/bin/lsof" if t == "lsof" else None):
+        with mock.patch(
+            "onair_monitor.monitor.shutil.which",
+            side_effect=lambda t: "/usr/bin/lsof" if t == "lsof" else None,
+        ):
             assert monitor._find_tool() == "lsof"
 
     def test_nothing_found(self):

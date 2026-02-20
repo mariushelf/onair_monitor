@@ -47,9 +47,53 @@ packages = ["src/onair_monitor"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
-[tool.ruff.lint]
-select = ["E", "F", "I"]
-ignore = ["E501"]
+[tool.ruff]
+lint.select = [
+    "ANN", # flake8-annotations
+    "E", # flake8
+    "F", # flake8
+    "I", # isort
+    "D", # pydocstyle
+    "S", # flake8-bandit
+    "NPY", # numpy-specific rules
+    "RUF", # ruff specific rules
+]
+lint.ignore = [
+    "E501",
+    "E712",
+    "E731", # Do not assign a `lambda` expression, use a `def`
+    "RUF013", # PEP 484 prohibits implicit `Optional`
+    "ANN202", # Missing return type annotation for private function
+    "ANN204", # Missing return type annotation for special function
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+
+    # pydocstyle
+    "D100", # Missing docstring in public module
+    "D104", # Missing docstring in public package
+    "D106", # Missing docstring in public nested class
+    "D401", # First line of docstring should be in imperative mood
+]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S", "ANN"]
+"__init__.py" = ["F401"]
+"tests/**" = ["S", "ANN", "D101", "D102", "D103"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+ignore-decorators = ["typing.override"]
+
+[tool.ty.src]
+#include = ["src", "tests"]
+include = ["src"]
+
+
+[[tool.ty.overrides]]
+include = ["tests/**"]
+
+[tool.ty.overrides.rules]
+invalid-method-override = "ignore"
+
+[dependency-groups]
+dev = [
+    "ty>=0.0.17",
+]

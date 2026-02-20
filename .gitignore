@@ -167,3 +167,22 @@ data/**
 poetry.lock
 .isort.cfg
 
+## Project specific
+results/**
+!results/.gitkeep
+/.vscode
+/.mcp.json
+/.profile
+/.ripgreprc
+/.vscode
+/.zprofile
+/.bash_profile
+/.bashrc
+/.zshrc
+/.gitconfig
+/.gitmodules
+refs
+objects
+hooks
+HEAD
+config

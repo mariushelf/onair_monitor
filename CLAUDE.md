@@ -18,3 +18,5 @@ Use semantic commit messages:
 - `refactor:` code restructuring without changing behavior
 - `test:` adding or updating tests
 - `chore:` maintenance tasks, dependency updates, CI config
+
+Do NOT add "Co-Authored-By" or any AI attribution trailers to commit messages.

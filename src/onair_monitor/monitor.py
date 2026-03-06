@@ -183,8 +183,12 @@ def _desktop_file_content() -> str:
 
 def install_autostart() -> None:
     """Copy the .desktop file to ~/.config/autostart/."""
+    exe = shutil.which("onair-monitor")
+    if exe is None:
+        sys.exit("Error: 'onair-monitor' not found on PATH. Is it installed?")
+    content = _desktop_file_content().replace("Exec=onair-monitor", f"Exec={exe}")
     AUTOSTART_DIR.mkdir(parents=True, exist_ok=True)
-    AUTOSTART_FILE.write_text(_desktop_file_content())
+    AUTOSTART_FILE.write_text(content)
     print(f"Installed autostart entry: {AUTOSTART_FILE}")
 
 
@@ -362,6 +366,16 @@ def main(argv: list[str] | None = None) -> None:
 
         # Lazy import: pystray requires GTK, unavailable in headless/CI environments
         import pystray  # ty: ignore[unresolved-import]
+
+        # Warn if the AppIndicator backend is unavailable (icon may not render)
+        _backend = type(pystray.Icon("_probe")).__module__
+        if _backend != "pystray._appindicator":
+            logger.warning(
+                "pystray is using the %s backend; the tray icon may not "
+                "render correctly. Install PyGObject (python3-gi) and "
+                "libayatana-appindicator for proper icon support.",
+                _backend,
+            )
 
         icon = pystray.Icon("onair-monitor")
         icon.icon = _make_icon_image(active=False)

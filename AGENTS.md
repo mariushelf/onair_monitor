@@ -20,3 +20,19 @@ Use semantic commit messages:
 - `chore:` maintenance tasks, dependency updates, CI config, cleanup of things that work but are unnecessary
 
 Do NOT add "Co-Authored-By" or any AI attribution trailers to commit messages.
+
+## Known Issues
+
+### Tray icon blank when installed via pyenv
+
+If `onair-monitor` is installed into a pyenv-managed Python (e.g. via `uv pip install`
+while pyenv is active), the tray icon may render as a grey rectangle. This happens
+because pyenv's Python lacks PyGObject (`gi`), so pystray falls back to the `_xorg`
+backend which doesn't render icons properly.
+
+**Fix:** Uninstall from pyenv (`~/.pyenv/versions/<ver>/bin/pip uninstall onair-monitor`)
+and use `uv tool install onair-monitor[tray]` instead. The uv tool environment picks up
+the system `python3-gi` package, enabling the AppIndicator backend.
+
+Note that pyenv shims (`~/.pyenv/shims/`) typically come before `~/.local/bin/` in PATH,
+so a pyenv-installed entry point will shadow the uv tool version.

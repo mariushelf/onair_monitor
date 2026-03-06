@@ -184,12 +184,13 @@ class TestInstallAutostart:
         with (
             mock.patch.object(monitor, "AUTOSTART_DIR", tmp_path),
             mock.patch.object(monitor, "AUTOSTART_FILE", desktop_file),
+            mock.patch("shutil.which", return_value="/usr/local/bin/onair-monitor"),
         ):
             monitor.install_autostart()
         assert desktop_file.exists()
         content = desktop_file.read_text()
         assert "[Desktop Entry]" in content
-        assert "Exec=onair-monitor" in content
+        assert "Exec=/usr/local/bin/onair-monitor" in content
 
 
 class TestUninstall:

@@ -19,8 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from PIL import Image  # ty: ignore[unresolved-import]
-
+    from PIL import Image
 try:
     from importlib.resources import files as _resource_files
 except ImportError:  # Python 3.8
@@ -133,7 +132,7 @@ def notify_ha(ha_url: str, webhook_id: str) -> None:
 def _make_icon_image(active: bool) -> "Image.Image":
     """Create a 64x64 webcam icon — red if active, gray if idle."""
     # Lazy import: PIL requires system libs not available in headless/CI environments
-    from PIL import Image, ImageDraw  # ty: ignore[unresolved-import]
+    from PIL import Image, ImageDraw
 
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -253,18 +252,34 @@ def monitor_loop(
 
     *on_state_change* is an optional callback ``(active: bool) -> None``
     used by the tray icon to update its appearance.
+
+    Uses debouncing to avoid false positives from brief device probes
+    (e.g. PipeWire/WirePlumber enumerating devices).  The camera must be
+    detected as active for ``debounce_count`` consecutive polls before it
+    is considered truly on.  Turning *off* is immediate.
     """
     was_active = False
     poll_interval = config.get("poll_interval", 2)
+    debounce_count = config.get("debounce_count", 3)
+    consecutive_active = 0
 
     while True:
         active = camera_in_use(tool)
-        if active != was_active:
-            webhook = config["webhook_on"] if active else config["webhook_off"]
+        if active:
+            consecutive_active += 1
+        else:
+            consecutive_active = 0
+
+        debounced_active = consecutive_active >= debounce_count
+
+        if debounced_active != was_active:
+            webhook = (
+                config["webhook_on"] if debounced_active else config["webhook_off"]
+            )
             notify_ha(config["ha_url"], webhook)
-            was_active = active
+            was_active = debounced_active
             if callable(on_state_change):
-                on_state_change(active)
+                on_state_change(debounced_active)
         time.sleep(poll_interval)
 
 
@@ -365,7 +380,7 @@ def main(argv: list[str] | None = None) -> None:
         import threading
 
         # Lazy import: pystray requires GTK, unavailable in headless/CI environments
-        import pystray  # ty: ignore[unresolved-import]
+        import pystray
 
         # Warn if the AppIndicator backend is unavailable (icon may not render)
         _backend = type(pystray.Icon("_probe")).__module__

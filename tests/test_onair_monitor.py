@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import ClassVar
 from unittest import mock
 
 import pytest
@@ -191,6 +192,100 @@ class TestInstallAutostart:
         content = desktop_file.read_text()
         assert "[Desktop Entry]" in content
         assert "Exec=/usr/local/bin/onair-monitor" in content
+
+
+# ---------------------------------------------------------------------------
+# Monitor loop (debounce)
+# ---------------------------------------------------------------------------
+
+
+class TestMonitorLoopDebounce:
+    """Verify that brief camera-active blips are ignored (debounced)."""
+
+    _BASE_CONFIG: ClassVar[dict[str, object]] = {
+        "ha_url": "http://ha:8123",
+        "webhook_on": "on",
+        "webhook_off": "off",
+        "poll_interval": 0,
+        "debounce_count": 3,
+    }
+
+    def _run_loop(self, active_sequence: list[bool], config: dict | None = None):
+        """Run the monitor loop for *len(active_sequence)* iterations.
+
+        Returns (notify_calls, state_changes) where each entry is a list of
+        recorded arguments.
+        """
+        config = config or dict(self._BASE_CONFIG)
+        it = iter(active_sequence)
+        call_count = 0
+
+        state_changes: list[bool] = []
+
+        def fake_camera(_tool):
+            nonlocal call_count
+            call_count += 1
+            try:
+                return next(it)
+            except StopIteration:
+                raise _Stop
+
+        class _Stop(Exception):
+            pass
+
+        with (
+            mock.patch("onair_monitor.monitor.camera_in_use", side_effect=fake_camera),
+            mock.patch("onair_monitor.monitor.notify_ha") as mock_notify,
+            mock.patch("onair_monitor.monitor.time.sleep"),
+        ):
+            try:
+                monitor.monitor_loop(
+                    config,
+                    "fuser",
+                    on_state_change=state_changes.append,
+                )
+            except _Stop:
+                pass
+        return mock_notify.call_args_list, state_changes
+
+    def test_brief_blip_ignored(self):
+        """Two consecutive active polls (< debounce_count=3) should not trigger."""
+        #                    active active idle idle idle
+        seq = [True, True, False, False, False]
+        calls, changes = self._run_loop(seq)
+        assert calls == []
+        assert changes == []
+
+    def test_sustained_active_triggers(self):
+        """Three consecutive active polls should trigger the 'on' webhook."""
+        seq = [True, True, True]
+        calls, changes = self._run_loop(seq)
+        assert len(calls) == 1
+        assert calls[0] == mock.call("http://ha:8123", "on")
+        assert changes == [True]
+
+    def test_sustained_then_off(self):
+        """Camera on for 3+ polls then off should trigger on then off."""
+        seq = [True, True, True, True, False]
+        calls, changes = self._run_loop(seq)
+        assert len(calls) == 2
+        assert calls[0] == mock.call("http://ha:8123", "on")
+        assert calls[1] == mock.call("http://ha:8123", "off")
+        assert changes == [True, False]
+
+    def test_interrupted_active_resets_count(self):
+        """A single False in the middle resets the consecutive count."""
+        seq = [True, True, False, True, True, False]
+        calls, _ = self._run_loop(seq)
+        assert calls == []
+
+    def test_debounce_count_1_behaves_like_no_debounce(self):
+        """With debounce_count=1, any single active poll triggers."""
+        config = {**self._BASE_CONFIG, "debounce_count": 1}
+        seq = [True, False]
+        calls, changes = self._run_loop(seq, config)
+        assert len(calls) == 2
+        assert changes == [True, False]
 
 
 class TestUninstall:

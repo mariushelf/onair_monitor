@@ -1,9 +1,13 @@
 SHELL := /bin/bash
 
-.PHONY: sync clean test test-unit-tests test-doctest build ty ruff type_check lint pre_commit format
+.PHONY: sync install clean test test-unit-tests test-doctest build ty ruff type_check lint pre_commit format
 
 sync:
 	uv sync --all-extras
+
+install:
+	uv run src/onair_monitor/monitor.py --install-service
+	uv run src/onair_monitor/monitor.py --install-autostart
 
 clean:
 	rm -rf dist

@@ -6,6 +6,7 @@ import argparse
 import glob
 import json
 import logging
+import logging.handlers
 import os
 import shutil
 import subprocess
@@ -94,18 +95,29 @@ def _find_tool() -> str | None:
 
 def camera_in_use(tool: str) -> bool:
     """Return True if any /dev/video* device is in use."""
-    devices = glob.glob("/dev/video*")
+    devices = sorted(glob.glob("/dev/video*"))
     if not devices:
+        logger.debug("No /dev/video* devices found")
         return False
-    try:
-        result = subprocess.run(  # noqa: S603
-            [tool, *devices],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+    active_devices = []
+    for dev in devices:
+        try:
+            result = subprocess.run(  # noqa: S603
+                [tool, dev],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            if result.returncode == 0:
+                active_devices.append(dev)
+        except OSError:
+            pass
+    if active_devices:
+        logger.info("Camera active on: %s (tool=%s)", ", ".join(active_devices), tool)
+    else:
+        logger.debug(
+            "No active cameras (checked %d devices with %s)", len(devices), tool
         )
-        return result.returncode == 0
-    except OSError:
-        return False
+    return len(active_devices) > 0
 
 
 # ---------------------------------------------------------------------------
@@ -320,6 +332,13 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Remove autostart and systemd service entries and exit.",
     )
     parser.add_argument(
+        "--log-file",
+        type=Path,
+        default=None,
+        help="Write logs to FILE (with rotation at 1 MB, 3 backups).",
+        metavar="FILE",
+    )
+    parser.add_argument(
         "--version",
         action="store_true",
         help="Print version and exit.",
@@ -351,10 +370,18 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     # --- Normal run ---
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
+    log_format = "%(asctime)s %(levelname)s %(name)s: %(message)s"
+    logging.basicConfig(level=logging.INFO, format=log_format)
+
+    if args.log_file:
+        args.log_file.parent.mkdir(parents=True, exist_ok=True)
+        file_handler = logging.handlers.RotatingFileHandler(
+            args.log_file,
+            maxBytes=1_000_000,
+            backupCount=3,
+        )
+        file_handler.setFormatter(logging.Formatter(log_format))
+        logging.getLogger().addHandler(file_handler)
 
     config = load_config(args.config)
 

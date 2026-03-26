@@ -407,7 +407,7 @@ def main(argv: list[str] | None = None) -> None:
         import threading
 
         # Lazy import: pystray requires GTK, unavailable in headless/CI environments
-        import pystray
+        import pystray  # ty: ignore[unresolved-import]  # not available in non-GUI environments
 
         # Warn if the AppIndicator backend is unavailable (icon may not render)
         _backend = type(pystray.Icon("_probe")).__module__

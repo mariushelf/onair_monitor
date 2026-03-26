@@ -144,7 +144,7 @@ def notify_ha(ha_url: str, webhook_id: str) -> None:
 def _make_icon_image(active: bool) -> "Image.Image":
     """Create a 64x64 webcam icon — red if active, gray if idle."""
     # Lazy import: PIL requires system libs not available in headless/CI environments
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageDraw  # not available in non-GUI environments
 
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)

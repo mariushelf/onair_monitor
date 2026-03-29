@@ -23,22 +23,10 @@ Debian / Ubuntu:
 sudo apt install libgirepository-2.0-dev libcairo2-dev
 ```
 
-Fedora:
+**2. Install:**
 
 ```bash
-sudo dnf install gobject-introspection-devel cairo-devel
-```
-
-Arch Linux:
-
-```bash
-sudo pacman -S gobject-introspection cairo
-```
-
-**2. Install with the tray extra:**
-
-```bash
-uv tool install "onair-monitor[tray]"
+uv tool install "onair-monitor"
 ```
 
 > **GNOME users:** the tray icon requires the

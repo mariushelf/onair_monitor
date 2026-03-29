@@ -6,8 +6,11 @@ sync:
 	uv sync --all-extras
 
 install:
-	uv run src/onair_monitor/monitor.py --install-service
 	uv run src/onair_monitor/monitor.py --install-autostart
+
+install_service:
+	uv run src/onair_monitor/monitor.py --install-service
+
 
 clean:
 	rm -rf dist

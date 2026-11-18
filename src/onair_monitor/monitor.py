@@ -20,6 +20,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from types import ModuleType
+
     from PIL import Image
 try:
     from importlib.resources import files as _resource_files
@@ -179,6 +181,20 @@ def _make_icon_image(active: bool) -> "Image.Image":
         draw.ellipse([47, 5, 57, 15], fill=(255, 180, 180, 255))
 
     return img
+
+
+def _import_pystray() -> ModuleType | None:
+    """Return the pystray module, or None if the ``tray`` extra is missing."""
+    try:
+        # Lazy import: pystray is optional and needs GTK
+        import pystray  # ty: ignore[unresolved-import]
+    except ImportError:
+        logger.warning(
+            "Tray icon unavailable: pystray is not installed. Running headless. "
+            "For the tray icon, install 'onair-monitor[tray]'."
+        )
+        return None
+    return pystray
 
 
 # ---------------------------------------------------------------------------
@@ -394,9 +410,9 @@ def main(argv: list[str] | None = None) -> None:
         )
         sys.exit(1)
 
-    headless = args.headless
+    pystray = None if args.headless else _import_pystray()
 
-    if headless:
+    if pystray is None:
         logger.info("Starting in headless mode (tool=%s)", tool)
         try:
             monitor_loop(config, tool)
@@ -405,9 +421,6 @@ def main(argv: list[str] | None = None) -> None:
     else:
         # Tray mode — icon on main thread, monitor on daemon thread
         import threading
-
-        # Lazy import: pystray requires GTK, unavailable in headless/CI environments
-        import pystray
 
         # Warn if the AppIndicator backend is unavailable (icon may not render)
         _backend = type(pystray.Icon("_probe")).__module__

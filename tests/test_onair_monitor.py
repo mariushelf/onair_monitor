@@ -175,6 +175,42 @@ class TestCLI:
 
 
 # ---------------------------------------------------------------------------
+# Tray fallback
+# ---------------------------------------------------------------------------
+
+
+class TestTrayFallback:
+    def test_import_pystray_missing_returns_none(self, caplog):
+        with mock.patch.dict("sys.modules", {"pystray": None}):
+            assert monitor._import_pystray() is None
+        assert "pystray is not installed" in caplog.text
+
+    def test_main_runs_headless_without_pystray(self, tmp_path):
+        config_path = tmp_path / "config.json"
+        config_path.write_text(json.dumps(monitor.DEFAULT_CONFIG))
+        with (
+            mock.patch.object(monitor, "_import_pystray", return_value=None),
+            mock.patch.object(monitor, "_find_tool", return_value="fuser"),
+            mock.patch.object(
+                monitor, "monitor_loop", side_effect=KeyboardInterrupt
+            ) as loop,
+        ):
+            monitor.main(["--config", str(config_path)])
+        loop.assert_called_once()
+
+    def test_headless_flag_skips_pystray_import(self, tmp_path):
+        config_path = tmp_path / "config.json"
+        config_path.write_text(json.dumps(monitor.DEFAULT_CONFIG))
+        with (
+            mock.patch.object(monitor, "_import_pystray") as imp,
+            mock.patch.object(monitor, "_find_tool", return_value="fuser"),
+            mock.patch.object(monitor, "monitor_loop", side_effect=KeyboardInterrupt),
+        ):
+            monitor.main(["--headless", "--config", str(config_path)])
+        imp.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
 # Install / uninstall
 # ---------------------------------------------------------------------------
 

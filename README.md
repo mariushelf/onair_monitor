@@ -20,13 +20,13 @@ system libraries:
 Debian / Ubuntu:
 
 ```bash
-sudo apt install libgirepository-2.0-dev libcairo2-dev
+sudo apt install libgirepository-2.0-dev libcairo2-dev pkg-config
 ```
 
 **2. Install:**
 
 ```bash
-uv tool install "onair-monitor"
+uv tool install "onair-monitor[tray]"
 ```
 
 > **GNOME users:** the tray icon requires the
@@ -60,7 +60,7 @@ The monitor POSTs to `{ha_url}/api/webhook/{webhook_on|off}`.
 ## Run
 
 ```bash
-# run directly (tray icon if available, otherwise headless)
+# run directly (tray icon if the tray extra is installed, otherwise headless)
 onair-monitor
 
 # force headless mode
